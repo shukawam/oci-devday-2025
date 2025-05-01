@@ -8,13 +8,14 @@ _ = load_dotenv(find_dotenv())
 username = os.getenv("USERNAME")
 password = os.getenv("PASSWORD")
 dsn = os.getenv("DSN")
+compartment_id = os.getenv("COMPARTMENT_ID")
 
 def _initialize_vector_store():
     embedding_function = OCIGenAIEmbeddings(
         auth_type="INSTANCE_PRINCIPAL",
         service_endpoint="https://inference.generativeai.ap-osaka-1.oci.oraclecloud.com",
         model_id="cohere.embed-multilingual-v3.0",
-        compartment_id="ocid1.compartment.oc1..aaaaaaaanjtbllhqxcg67dq7em3vto2mvsbc6pbgk4pw6cx37afzk3tngmoa",
+        compartment_id=compartment_id,
     )
     connection = oracledb.connect(
         user=username,
