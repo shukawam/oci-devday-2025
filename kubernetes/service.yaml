@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: devday-service
+  namespace: examples
+spec:
+  selector:
+    app: devday-app
+  ports:
+    - protocol: TCP
+      port: 8501
+      targetPort: 8501

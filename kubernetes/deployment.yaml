@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devday-app
+  namespace: examples
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devday-app
+  template:
+    metadata:
+      labels:
+        app: devday-app
+    spec:
+      containers:
+        - name: devday-app
+          image: nrt.ocir.io/orasejapan/shukawam/devday-app:1.0.0
+          ports:
+            - name: api
+              containerPort: 8501
+          env:
+            - name: GOOGLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: devday-secret
+                  key: GOOGLE_API_KEY
+            - name: USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: devday-secret
+                  key: USERNAME
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: devday-secret
+                  key: PASSWORD
+            - name: DSN
+              valueFrom:
+                secretKeyRef:
+                  name: devday-secret
+                  key: DSN
+            - name: COMPARTMENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: devday-secret
+                  key: COMPARTMENT_ID
+            - name: TRACELOOP_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: devday-secret
+                  key: TRACELOOP_API_KEY
+      imagePullSecrets:
+        - name: ocir-secret

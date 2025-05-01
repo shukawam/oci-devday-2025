@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: devday-app
+  namespace: examples
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - devday.shukawam.me
+      secretName: shukawam-tls-secret-devday
+  rules:
+    - host: devday.shukawam.me
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: devday-service
+                port:
+                  number: 8501
