@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: devday-app
-          image: nrt.ocir.io/orasejapan/shukawam/devday-app:1.0.0
+          image: nrt.ocir.io/orasejapan/shukawam/devday-app:1.0.1
           ports:
             - name: api
               containerPort: 8501
