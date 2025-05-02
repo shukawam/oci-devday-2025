@@ -35,6 +35,9 @@ class Recommendation(BaseModel):
 class Recommendations(BaseModel):
     recommendations: List[Recommendation] = Field(..., default_factory=list, description="学習コンテンツのリスト")
 
+class Evaluation(BaseModel):
+    relevance_score: float = Field(..., description="関連性スコア")
+
 # LangGraphで使用する状態管理用のモデル
 class State(BaseModel):
     question: str = Field(..., description="ユーザーからの質問")
@@ -45,6 +48,14 @@ class State(BaseModel):
     recommendation_summary: Recommendations = Field(
         default_factory=lambda: Recommendations(recommendations=[]),
         description="学習コンテンツのリスト"
+    )
+    relevance_score: float = Field(
+        default=0.0,
+        description="関連性スコア"
+    )
+    google_search_count: int = Field(
+        default=0,
+        description="Google検索の回数"
     )
     exective_summary: str = Field(
         default="",
@@ -151,6 +162,39 @@ class Recommender:
         )
         result: Recommendations = chain.invoke(state.structured_summary)
         state.recommendation_summary = result
+        # Google検索の回数をインクリメント
+        state.google_search_count += 1
+        print(f"{state=}")
+        return state
+
+class Evaluator:
+    """
+    Google検索結果とセッション情報を分析し、関連性を評価するクラス。
+    LangGraphのノードとして機能することを想定。
+    """
+    def __init__(self, llm: ChatGoogleGenerativeAI):
+        self.llm = llm.with_structured_output(Evaluation)
+    
+    def run(self, state: State) -> State:
+        prompt = ChatPromptTemplate(
+            [
+                SystemMessage(
+                    content="あなたは与えられたセッション情報とGoogle検索結果を分析し、その関連度を評価します。関連度は0から1の範囲で、1が最も関連性が高いことを示します。出力は、'relevance_score'キーの下に関連度スコアを持つJSON形式で出力してください。関連度スコアが0の場合は、'relevance_score'キーの値として0.0を含むJSONを出力してください。"
+                ),
+                HumanMessagePromptTemplate.from_template(
+                    template="あなたは与えられたセッション情報とGoogle検索結果を分析し、その関連度を評価してください。\n\n ### セッション情報 \n{structured_summary}\n\n ### Google検索結果 \n{recommendation_summary}\n\n"
+                )
+            ]
+        )
+        chain = (
+            {"structured_summary": RunnablePassthrough(), "recommendation_summary": RunnablePassthrough()}
+            | prompt
+            | self.llm # with tools and structured_output
+        )
+        result: Evaluation = chain.invoke(
+            {"structured_summary": state.structured_summary, "recommendation_summary": state.recommendation_summary}
+        )
+        state.relevance_score = result.relevance_score
         print(f"{state=}")
         return state
 
@@ -209,8 +253,10 @@ class Agent:
         # 各ツールの初期化
         self.session_retriever = SessionRetriever(llm=self.llm)
         self.recommender = Recommender(llm=self.llm)
+        self.evaluator = Evaluator(llm=self.llm)
         self.summarizer = Summarizer(llm=self.llm)
         self.graph = self._get_compiple_graph()
+    
     
     def _get_compiple_graph(self) -> CompiledStateGraph:
         # StateGraphの初期化
@@ -222,7 +268,11 @@ class Agent:
         )
         graph_builder.add_node(
             node="recommender",
-            action=self.recommender.run,
+            action=self.recommender.run
+        )
+        graph_builder.add_node(
+            node="evaluator",
+            action=self.evaluator.run
         )
         graph_builder.add_node(
             node="summarizer",
@@ -230,7 +280,14 @@ class Agent:
         )
         # エッジ（ノード間の繋がり）の追加
         graph_builder.add_edge("session_retriever", "recommender")
-        graph_builder.add_edge("recommender", "summarizer")
+        graph_builder.add_edge("recommender", "evaluator")
+        # 条件付きエッジの追加（再度Google検索するか、要約するか）
+        graph_builder.add_conditional_edges(
+            "evaluator",
+            # Google検索の回数が5回を超えるか、関連性スコアが0.5を超える場合は、最終出力へ
+            lambda state: state.google_search_count > 5 or state.relevance_score > 0.5,
+            {True: "summarizer", False: "recommender"}
+        )
         # 始点と終点の設定
         graph_builder.set_entry_point("session_retriever")
         graph_builder.set_finish_point("summarizer")
