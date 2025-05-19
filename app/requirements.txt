@@ -33,6 +33,8 @@ beautifulsoup4==4.13.4
     # via oci-devday-2025
 blinker==1.9.0
     # via streamlit
+bytecode==0.16.2
+    # via ddtrace
 cachetools==5.5.2
     # via
     #   google-auth
@@ -69,6 +71,8 @@ cryptography==44.0.2
     #   pyopenssl
 dataclasses-json==0.6.7
     # via langchain-community
+ddtrace==3.7.0
+    # via oci-devday-2025
 debugpy==1.8.14
     # via ipykernel
 decorator==5.2.1
@@ -84,6 +88,8 @@ distro==1.9.0
     # via
     #   anthropic
     #   posthog
+envier==0.6.1
+    # via ddtrace
 executing==2.2.0
     # via stack-data
 filelock==3.18.0
@@ -209,6 +215,8 @@ langsmith==0.3.37
     #   langchain
     #   langchain-community
     #   langchain-core
+legacy-cgi==2.6.3 ; python_full_version >= '3.13'
+    # via ddtrace
 markupsafe==3.0.2
     # via jinja2
 marshmallow==3.26.1
@@ -239,6 +247,7 @@ oci==2.150.2
     # via oci-devday-2025
 opentelemetry-api==1.32.1
     # via
+    #   ddtrace
     #   opentelemetry-exporter-otlp-proto-grpc
     #   opentelemetry-exporter-otlp-proto-http
     #   opentelemetry-instrumentation
@@ -500,6 +509,7 @@ proto-plus==1.26.1
     #   google-api-core
 protobuf==5.29.4
     # via
+    #   ddtrace
     #   google-ai-generativelanguage
     #   google-api-core
     #   googleapis-common-protos
@@ -650,6 +660,7 @@ typing-extensions==4.13.2
     #   anthropic
     #   anyio
     #   beautifulsoup4
+    #   ddtrace
     #   huggingface-hub
     #   langchain-core
     #   opentelemetry-sdk
@@ -676,11 +687,14 @@ wcwidth==0.2.13
     # via prompt-toolkit
 wrapt==1.17.2
     # via
+    #   ddtrace
     #   deprecated
     #   opentelemetry-instrumentation
     #   opentelemetry-instrumentation-sqlalchemy
     #   opentelemetry-instrumentation-threading
     #   opentelemetry-instrumentation-urllib3
+xmltodict==0.14.2
+    # via ddtrace
 xxhash==3.5.0
     # via langgraph
 yarl==1.20.0
