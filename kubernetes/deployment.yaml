@@ -12,7 +12,6 @@ spec:
     metadata:
       labels:
         app: devday-app
-      annotations:
         admission.datadoghq.com/enabled: "true"
     spec:
       containers:
