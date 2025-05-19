@@ -12,13 +12,16 @@ spec:
     metadata:
       labels:
         app: devday-app
+      annotations:
+        admission.datadoghq.com/enabled: "true"
     spec:
       containers:
         - name: devday-app
-          image: nrt.ocir.io/orasejapan/shukawam/devday-app:1.0.1
+          image: nrt.ocir.io/orasejapan/shukawam/devday-app:1.0.2
           ports:
             - name: api
               containerPort: 8501
+          command: ["ddtrace-run", "streamlit", "run", "main.py"]
           env:
             - name: GOOGLE_API_KEY
               valueFrom:
@@ -45,6 +48,14 @@ spec:
                 secretKeyRef:
                   name: devday-secret
                   key: COMPARTMENT_ID
+            # Datadog
+            - name: DD_LLMOBS_ENABLED
+              value: "1" # Enabled
+            - name: DD_LLMOBS_ML_APP
+              value: devday
+            - name: DD_LLMOBS_AGENTLESS_ENABLED
+              value: "false" # DefaultでFalseだが、有効にならないので明示的に指定する
+            # Traceloop via OpenLLMetry
             - name: TRACELOOP_API_KEY
               valueFrom:
                 secretKeyRef:
