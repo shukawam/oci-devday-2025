@@ -10,7 +10,7 @@ from langchain_core.messages import SystemMessage
 from langchain_core.documents import Document
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from langchain_core.vectorstores import VectorStoreRetriever
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.language_models import BaseChatModel
 from langchain_community.embeddings.oci_generative_ai import OCIGenAIEmbeddings
 from langgraph.graph import StateGraph
 from langgraph.graph.state import CompiledStateGraph
@@ -68,7 +68,7 @@ class SessionRetriever:
     Oracle Databaseからセッション情報を検索し、関連性の高いセッション情報を構造化データとして抽出するクラス。
     LangGraphのノードとして機能することを想定。
     """
-    def __init__(self, llm: ChatGoogleGenerativeAI):
+    def __init__(self, llm: BaseChatModel):
         self.llm_structured = llm.with_structured_output(Sessions)
         _ = load_dotenv(find_dotenv())
         compartment_id = os.getenv("COMPARTMENT_ID")
@@ -132,7 +132,7 @@ class Recommender:
     Google検索を行い、関連セッションで事前に学習しておくべき内容を取得するクラス。
     LangGraphのノードとして機能することを想定。
     """
-    def __init__(self, llm: ChatGoogleGenerativeAI):
+    def __init__(self, llm: BaseChatModel):
         self.llm_tool = llm.bind_tools(GenAITool(google_search={}))
         self.llm_tool = llm.with_structured_output(Recommendations)
     
@@ -172,7 +172,7 @@ class Evaluator:
     Google検索結果とセッション情報を分析し、関連性を評価するクラス。
     LangGraphのノードとして機能することを想定。
     """
-    def __init__(self, llm: ChatGoogleGenerativeAI):
+    def __init__(self, llm: BaseChatModel):
         self.llm = llm.with_structured_output(Evaluation)
     
     def run(self, state: State) -> State:
@@ -202,8 +202,9 @@ class Summarizer:
     """
     一連の情報から最終的な要約を生成するクラス。
     LangGraphのノードとして機能することを想定。
+    最終的な出力は、LLM自体の性能はそこまで不要なため価格重視でOCIを利用する。
     """
-    def __init__(self, llm: ChatGoogleGenerativeAI):
+    def __init__(self, llm: BaseChatModel):
         self.llm = llm
     
     def _format_structured_summary(self, structured_summary: Sessions) -> str:
@@ -248,13 +249,17 @@ class Summarizer:
 
 # --- エージェント実装 ---
 class Agent:
-    def __init__(self, llm: ChatGoogleGenerativeAI):
+    def __init__(self, llm: BaseChatModel, summarize_llm: BaseChatModel = None):
         self.llm = llm
         # 各ツールの初期化
         self.session_retriever = SessionRetriever(llm=self.llm)
         self.recommender = Recommender(llm=self.llm)
         self.evaluator = Evaluator(llm=self.llm)
-        self.summarizer = Summarizer(llm=self.llm)
+        if summarize_llm == None:
+            self.summarize_llm = llm
+        else:
+            self.summarize_llm = summarize_llm
+        self.summarizer = Summarizer(llm=self.summarize_llm)
         self.graph = self._get_compiple_graph()
     
     
