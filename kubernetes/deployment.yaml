@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: devday-app
-  namespace: examples
+  namespace: devday25
 spec:
   replicas: 1
   selector:
@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: devday-app
-          image: nrt.ocir.io/orasejapan/shukawam/devday-app:1.0.2
+          image: nrt.ocir.io/orasejapan/shukawam/devday-app:1.1.0
           ports:
             - name: api
               containerPort: 8501
@@ -53,12 +53,6 @@ spec:
             - name: DD_LLMOBS_ML_APP
               value: devday
             - name: DD_LLMOBS_AGENTLESS_ENABLED
-              value: "false" # DefaultでFalseだが、有効にならないので明示的に指定する
-            # Traceloop via OpenLLMetry
-            - name: TRACELOOP_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: devday-secret
-                  key: TRACELOOP_API_KEY
+              value: "0"
       imagePullSecrets:
         - name: ocir-secret
