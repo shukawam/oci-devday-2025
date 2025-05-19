@@ -9,10 +9,6 @@ from agent import Agent
 _ = load_dotenv()
 compartment_id = os.getenv("COMPARTMENT_ID", "ocid1.compartment.oc1..aaaaaaaanjtbllhqxcg67dq7em3vto2mvsbc6pbgk4pw6cx37afzk3tngmoa")
 
-# TODO: Datadogに変更する
-from traceloop.sdk import Traceloop
-Traceloop.init(disable_batch=True)
-
 def main():
     st.title("Oracle Developer Days 2025")
     st.caption("実践！Datadogで高めるOCIのオブザーバビリティのデモで使用するアプリケーションです。")

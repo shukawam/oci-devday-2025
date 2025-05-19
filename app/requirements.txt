@@ -33,7 +33,7 @@ beautifulsoup4==4.13.4
     # via oci-devday-2025
 blinker==1.9.0
     # via streamlit
-bytecode==0.16.2
+# bytecode==0.16.2
     # via ddtrace
 cachetools==5.5.2
     # via
@@ -71,7 +71,7 @@ cryptography==44.0.2
     #   pyopenssl
 dataclasses-json==0.6.7
     # via langchain-community
-ddtrace==3.7.0
+# ddtrace==3.7.0
     # via oci-devday-2025
 debugpy==1.8.14
     # via ipykernel
@@ -88,7 +88,7 @@ distro==1.9.0
     # via
     #   anthropic
     #   posthog
-envier==0.6.1
+# envier==0.6.1
     # via ddtrace
 executing==2.2.0
     # via stack-data
@@ -215,7 +215,7 @@ langsmith==0.3.37
     #   langchain
     #   langchain-community
     #   langchain-core
-legacy-cgi==2.6.3 ; python_full_version >= '3.13'
+# legacy-cgi==2.6.3 ; python_full_version >= '3.13'
     # via ddtrace
 markupsafe==3.0.2
     # via jinja2
